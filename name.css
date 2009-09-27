@@ -1,0 +1,18 @@
+@CHARSET "ISO-8859-1";
+
+.name-field .form-item {
+  float: left;
+}
+
+.name-field .name {
+  margin-right: 1em;
+}
+
+.name-field .name-credentials, .name-field .name-firstname, .name-field .name-middlename, .name-field .name-lastname {
+  width: 120px;
+}
+
+.name-field .name-name {
+  width: 240px;
+}
+

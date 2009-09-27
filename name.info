@@ -1,0 +1,7 @@
+; $Id$
+name = Name
+description = Defines a persons name field type.
+package = Fields
+version = VERSION
+core = 7.x
+files[]=name.module
