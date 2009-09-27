@@ -396,8 +396,8 @@ function name_field_widget_info() {
       'label' => t('Name'),
       'field types' => array('name_name', 'name_short', 'name_standard', 'name_full', 'name_extended'),
       'settings' => array(
-        'size_name' => 60, 'size_firstname' => 25, 'size_lastname' => 25,
-        'size_credentials' => 40, 'size_middlename' => 25,
+        'size_name' => 40, 'size_firstname' => 20, 'size_lastname' => 20,
+        'size_credentials' => 20, 'size_middlename' => 10,
       ),
       'behaviors' => array(
         'multiple values' => FIELD_BEHAVIOR_DEFAULT,
@@ -464,7 +464,7 @@ function name_field_widget(&$form, &$form_state, $field, $instance, $langcode, $
     '#title' => $instance['label'],
     '#cardinality' => $field['cardinality'],
     '#columns' => _name_field_columns($field['type']),
-    '#settings' => $field['settings'],
+    '#settings' => $field['settings'] + $instance['widget']['settings'],
     '#default_value' => isset($items[$delta]) ? $items[$delta] : array(),
   );
   // TODO: Label gets lost! Field bug??
@@ -520,9 +520,20 @@ function name_element_process($element, $form_state, $form) {
         '#attributes' => array('class' => array('name name-' . $column)),
         '#title' => $name_parts[$column],
       );
-      if (isset($element['#settings']) && isset($element['#settings']['max_length_' . $column])) {
-        $element[$column]['#maxlength'] = $element['#settings']['max_length_' . $column];
+      if (isset($element['#settings'])) {
+        if (isset($element['#settings']['max_length_' . $column])) {
+          $element[$column]['#maxlength'] = $element['#settings']['max_length_' . $column];
+        }
+        if (isset($element['#settings']['size_' . $column])) {
+          $element[$column]['#size'] = $element['#settings']['size_' . $column];
+        }
+        if (isset($element['#settings']['required_components'])) {
+          if (in_array($column, $element['#settings']['required_components'])) {
+            $element[$column]['#attributes']['class'][0] .= ' required-part';
+          }
+        }
       }
+
     }
   }
   $element['#element_validate'] = array('_element_validate_has_partial_name');
