@@ -283,6 +283,10 @@ function _name_field_instance_settings_form($field, $instance = NULL) {
       '#required' => TRUE,
       '#options' => $field_options,
     );
+    if (!($key == 'title' || $key == 'generational')) {
+      unset($form['field_type'][$key]['#options']['select']);
+    }
+
     $form['size'][$key] = array(
       '#type' => 'textfield',
       '#title' => t('HTML size property for !title', array('!title' => $title)),
