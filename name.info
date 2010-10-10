@@ -1,7 +1,15 @@
 ; $Id$
-name = Name
+name = Name Field
 description = Defines a persons name field type.
-package = Fields
+dependencies[] = field
+package = Other
 version = VERSION
 core = 7.x
-files[]=name.module
+
+files[] = name.admin.inc
+files[] = name.install
+files[] = name.module
+files[] = includes/name.content.inc
+files[] = includes/name.parser.inc
+files[] = includes/name.token.inc
+files[] = tests/name.test
