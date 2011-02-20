@@ -11,14 +11,6 @@
 function namedb_menu() {
   $items = array();
 
-  $items['namedb-import'] = array(
-    'title' => 'Name Database',
-    'page callback' => 'namesdb_parse_us_first_names',
-    'description' => 'List and configure the name database.',
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   // Admin menu items
   $items['admin/config/regional/name/namedb'] = array(
     'title' => 'Name Database',
