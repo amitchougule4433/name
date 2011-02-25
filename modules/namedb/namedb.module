@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Helps maintain a simple name database of words.

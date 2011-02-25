@@ -1,4 +1,3 @@
-; $Id$ - Ripped from the pathauto module.
 [default]
 À = "A"
 Á = "A"

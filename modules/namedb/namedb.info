@@ -1,4 +1,3 @@
-; $Id$
 name = Name DB
 description = Defines a database for maintain a list of names.
 package = Other

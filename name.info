@@ -1,4 +1,3 @@
-; $Id$
 name = Name Field
 description = Defines a persons name field type.
 dependencies[] = field
