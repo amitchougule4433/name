@@ -138,6 +138,44 @@ function name_theme() {
 }
 
 /**
+ * Implements hook_username_alter().
+ *
+ * @todo: Make this faster.
+ */
+function name_username_alter(&$name, $account) {
+  // Don't alter anonymous users or objects that do not have any user ID.
+  if (empty($account->uid)) {
+    return;
+  }
+
+  // Real name was loaded/generated via hook_user_load(), so re-use it.
+  if (!empty($account->realname)) {
+    $name = $account->realname;
+  }
+}
+
+/**
+ * Implements hook_user_load().
+ */
+function name_user_load(array $accounts) {
+  foreach (field_info_instances('user', 'user') as $instance) {
+    $field = field_info_field($instance['field_name']);
+    if ($field['type'] == 'name' && !empty($instance['settings']['override_username'])) {
+      $format = name_get_format_by_machine_name($instance['settings']['override_format']);
+      if (empty($format)) {
+        $format = name_get_format_by_machine_name('default');
+      }
+      foreach ($accounts as $uid => $acccount) {
+        if ($items = field_get_items('user', $acccount, $instance['field_name'])) {
+          // We still have raw user input here.
+          $accounts[$uid]->realname = name_format($items[0], $format, array('object' => $acccount, 'type' => 'user'));
+        }
+      }
+    }
+  }
+}
+
+/**
  * Loads a list of all user defined formats.
  */
 function name_get_custom_formats() {
@@ -532,6 +570,9 @@ function name_field_info() {
         ),
         'inline_css' => array_combine($keys, array_fill(0, $count, '')),
         'title_display' => array_combine($keys, array_fill(0, $count, 'description')),
+        // New settings to override the user name. Only applies to user entities.
+        'override_username' => FALSE,
+        'override_format' => 'default',
       ),
     ),
   );
@@ -553,32 +594,6 @@ function name_field_settings_form($field, $instance, $has_data) {
 function name_field_settings_form_validate($form, &$form_state) {
   module_load_include('inc', 'name', 'includes/name.content');
   _name_field_settings_form_validate($form, $form_state);
-}
-
-
-/**
- * Implements hook_field_schema().
- *
- * There is no path backwards in Drupal 7 when it comes to dropping columns or
- * reducing the size of the columns (via coresponence mid 2010). So as a varchar
- * is just the data + a terminator byte, all fields get all columns with vc(255).
- */
-function name_field_schema($field) {
-  $columns = array();
-  foreach (_name_translations() as $key => $title) {
-    $columns[$key] = array(
-      'type' => 'varchar',
-      'length' => 255,
-      'not null' => FALSE,
-    );
-  }
-  return array(
-    'columns' => $columns,
-    'indexes' => array(
-      'given' => array('given'),
-      'family' => array('family'),
-    ),
-  );
 }
 
 /**
@@ -660,23 +675,7 @@ function name_field_widget_info() {
  * Min. components is done via name_element validation callback.
  */
 function name_field_widget_error($element, $error, $form, &$form_state) {
-/*
-
-$element['#entity_type']
-$element['#bundle']
-$element['#field_name']
-$element['#language']
-$element['#columns']
-$element['#title']
-$element['#description']
-$element['#required']
-$element['#delta']
-$element['#language']
-$field = $form_state['field'][$element['#field_name']][$element['#language']]['field']
-
- */
-
- // form_error($element['value'], $error['message']);
+  // form_error($element['value'], $error['message']);
 }
 
 /**
@@ -757,20 +756,8 @@ function name_field_formatter_view($entity_type, $entity, $field, $instance, $la
   }
 
   foreach ($items as $delta => $item) {
-    $parts = array();
-    foreach (_name_translations() as $key => $title) {
-      // It is possible for false negatives.
-      // TODO: Trim on save maybe.
-      if (empty($item[$key]) || !strlen($item[$key])) {
-        $parts[$key] = NULL;
-      }
-      else {
-        $parts[$key] = $item[$key];
-      }
-    }
-
     // We still have raw user input here.
-    $value = name_format($parts, $format, array('object' => $entity, 'type' => $entity_type));
+    $value = name_format($item, $format, array('object' => $entity, 'type' => $entity_type));
     $element[$delta] = array(
       '#markup' => _name_value_sanitize($value, NULL, $type)
     );
@@ -813,9 +800,6 @@ function _name_value_sanitize($item, $column = NULL, $type = 'default') {
 
 /* -------------------------- FAPI Form Alters ------------------------------ */
 
-//function name_form_alter(&$form, &$form_state, $form_id) {
-//  dpm($form_id);
-//}
 /**
  * Provides a hook into the theming of the field, instance and display settings,
  * using #pre_render callbacks.

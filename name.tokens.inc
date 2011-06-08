@@ -33,10 +33,13 @@ function name_token_info() {
       'description' => t('The %component component of the name.', array('%component' => $component_label)),
     );
   }
-
+  $additions['realname'] = array(
+    'name' => t('Real name'),
+    'description' => t('The real name of the user account, from the RealName or Name modules.'),
+  );
   return array(
     'types' => $types,
-    'tokens' => array('name' => $name),
+    'tokens' => array('name' => $name, 'user' => $additions),
   );
 }
 
@@ -46,6 +49,21 @@ function name_token_info() {
 function name_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $sanitize = !empty($options['sanitize']);
   $replacements = array();
+
+  if ($type == 'user' && !empty($data['user'])) {
+    // If loaded correctly, this should have no overhead.
+    $account = user_load($data['user']->uid);
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'realname':
+          $replacements[$original] = '';
+          if (!empty($account->realname)) {
+            $replacements[$original] = $sanitize ? check_plain($account->realname) : $account->realname;
+          }
+          break;
+      }
+    }
+  }
 
   if ($type == 'name' && !empty($data['name'])) {
     $name = $data['name'];

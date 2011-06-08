@@ -315,6 +315,30 @@ function _name_field_instance_settings_form($field, $instance = NULL) {
     );
   }
 
+  if ($instance['entity_type'] == 'user' && $instance['bundle'] == 'user') {
+    $form['override_username'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use this field to override the users login name?'),
+      '#default_value' => isset($settings['override_username']) ? $settings['override_username'] : 0,
+    );
+    $form['override_format'] = array(
+      '#type' => 'select',
+      '#title' => t('User name override format to use'),
+      '#default_value' => isset($settings['override_format']) ? $settings['override_format'] : 0,
+      '#options' => array('default' => t('Default')) + name_get_custom_format_options(),
+    );
+  }
+  else {
+    $form['override_username'] = array(
+      '#type' => 'value',
+      '#value' => 0,
+    );
+    $form['override_format'] = array(
+      '#type' => 'value',
+      '#value' => 'default',
+    );
+  }
+
   return $form;
 
 }

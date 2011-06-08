@@ -6,6 +6,31 @@
  */
 
 /**
+ * Implements hook_field_schema().
+ *
+ * There is no path backwards in Drupal 7 when it comes to dropping columns or
+ * reducing the size of the columns (via coresponence mid 2010). So as a varchar
+ * is just the data + a terminator byte, all fields get all columns with vc(255).
+ */
+function name_field_schema($field) {
+  $columns = array();
+  foreach (_name_translations() as $key => $title) {
+    $columns[$key] = array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+    );
+  }
+  return array(
+    'columns' => $columns,
+    'indexes' => array(
+      'given' => array('given'),
+      'family' => array('family'),
+    ),
+  );
+}
+
+/**
  * Implements hook_schema().
  */
 function name_schema() {
