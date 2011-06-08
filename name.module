@@ -22,9 +22,10 @@
  *        A keyed array of additional parameters to pass into the function.
  *        Includes:
  *          'object' - An object or array.
- *            This object is used for Token module subsitutions.
+ *            This entity is used for Token module subsitutions.
+ *            Currently not used.
  *          'type' - A string.
- *            The object identifier: node, user, etc
+ *            The entity identifier: node, user, etc
  */
 function name_format($name_components, $format, $settings = array()) {
   module_load_include('inc', 'name', 'includes/name.parser');
@@ -610,7 +611,7 @@ function name_field_load($entity_type, $entities, $field, $instances, $langcode,
           unset($items[$id][$delta][$key]);
         }
         else {
-          $items[$id][$delta]['safe'][$key] = _name_value_sanitize($langcode, $item, $key);
+          $items[$id][$delta]['safe'][$key] = _name_value_sanitize($item, $key);
         }
       }
     }
@@ -771,7 +772,7 @@ function name_field_formatter_view($entity_type, $entity, $field, $instance, $la
     // We still have raw user input here.
     $value = name_format($parts, $format, array('object' => $entity, 'type' => $entity_type));
     $element[$delta] = array(
-      '#markup' => _name_value_sanitize($langcode, $value, NULL, $type)
+      '#markup' => _name_value_sanitize($value, NULL, $type)
     );
   }
 
@@ -792,7 +793,7 @@ function name_field_formatter_view($entity_type, $entity, $field, $instance, $la
  *     'plain' runs through strip_tags()
  *     'raw' has no processing applied to it
  */
-function _name_value_sanitize($langcode, $item, $column = NULL, $type = 'default') {
+function _name_value_sanitize($item, $column = NULL, $type = 'default') {
   $safe_key = 'safe' . ($type == 'default' ? '' : '_' . $type);
   if (is_array($item) && isset($item[$safe_key])) {
     return $item[$safe_key][$column];
@@ -807,29 +808,6 @@ function _name_value_sanitize($langcode, $item, $column = NULL, $type = 'default
       return $value;
     default:
       return check_plain($value);
-  }
-}
-
-/* ------------------------------ Token Code -------------------------------- */
-
-/**
- * Implements hook_token_list().
- */
-function name_token_list($type = 'all') {
-  if ($type == 'field' || $type == 'all') {
-    module_load_include('inc', 'name', 'includes/name.content');
-    return _name_token_list($type);
-  }
-}
-
-
-/**
- * Implements hook_token_values().
- */
-function name_token_values($type, $object = NULL) {
-  if ($type == 'field') {
-    module_load_include('inc', 'name', 'includes/name.content');
-    return _name_token_values($type, $object);
   }
 }
 
