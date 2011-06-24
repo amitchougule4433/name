@@ -139,8 +139,6 @@ function name_theme() {
 
 /**
  * Implements hook_username_alter().
- *
- * @todo: Make this faster.
  */
 function name_username_alter(&$name, $account) {
   // Don't alter anonymous users or objects that do not have any user ID.
@@ -156,6 +154,8 @@ function name_username_alter(&$name, $account) {
 
 /**
  * Implements hook_user_load().
+ *
+ * @todo: Make this faster.
  */
 function name_user_load(array $accounts) {
   foreach (field_info_instances('user', 'user') as $instance) {
