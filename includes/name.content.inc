@@ -315,30 +315,29 @@ function _name_field_instance_settings_form($field, $instance = NULL) {
     );
   }
 
+  // Add the overwrite user name option.
   if ($instance['entity_type'] == 'user' && $instance['bundle'] == 'user') {
-    $form['override_username'] = array(
+    $preferred_field = variable_get('name_user_preferred', '');
+    $form['name_user_preferred'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use this field to override the users login name?'),
-      '#default_value' => isset($settings['override_username']) ? $settings['override_username'] : 0,
+      '#default_value' => $preferred_field == $instance['field_name'] ? 1 : 0,
     );
     $form['override_format'] = array(
       '#type' => 'select',
       '#title' => t('User name override format to use'),
-      '#default_value' => isset($settings['override_format']) ? $settings['override_format'] : 0,
+      '#default_value' => isset($settings['override_format']) ? $settings['override_format'] : 'default',
       '#options' => array('default' => t('Default')) + name_get_custom_format_options(),
     );
   }
   else {
-    $form['override_username'] = array(
-      '#type' => 'value',
-      '#value' => 0,
-    );
+    // We may extend this feature to Profile2 latter.
     $form['override_format'] = array(
       '#type' => 'value',
-      '#value' => 'default',
+      '#value' => isset($settings['override_format']) ? $settings['override_format'] : 'default',
     );
   }
-
+  
   return $form;
 
 }

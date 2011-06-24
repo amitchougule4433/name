@@ -80,7 +80,8 @@ function name_install() {
  * Implements hook_uninstall().
  */
 function name_uninstall() {
-  //variable_del('name_settings');
+  variable_del('name_settings');
+  variable_del('name_user_preferred');
 }
 
 /**
@@ -137,6 +138,20 @@ function name_update_6000() {
   return t('Created name formats table {name_custom_format}.') . '<br/>'
       . $t('The default set of custom name format strings was generated and saved. These are listed !here.',
       array('!here' => l($t('here', 'admin/config/regional/name'))));
+}
+
+/**
+ * Move the user field selected realname into a variable to avoid doing lookups
+ * on all user fields / instances during hook_user_load().
+ */
+function name_update_7000() {
+  foreach (field_info_instances('user', 'user') as $instance) {
+    $field = field_info_field($instance['field_name']);
+    if ($field['type'] == 'name' && !empty($instance['settings']['override_username'])) {
+      variable_set('name_user_preferred', $instance['field_name']);
+      break;
+    }
+  }
 }
 
 /**

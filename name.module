@@ -154,21 +154,26 @@ function name_username_alter(&$name, $account) {
 
 /**
  * Implements hook_user_load().
- *
- * @todo: Make this faster.
  */
 function name_user_load(array $accounts) {
-  foreach (field_info_instances('user', 'user') as $instance) {
-    $field = field_info_field($instance['field_name']);
-    if ($field['type'] == 'name' && !empty($instance['settings']['override_username'])) {
-      $format = name_get_format_by_machine_name($instance['settings']['override_format']);
-      if (empty($format)) {
-        $format = name_get_format_by_machine_name('default');
+  // In the event there are a lot of user_load() calls, cache the results.
+  $names = &drupal_static(__FUNCTION__, array());
+
+  $field_name = variable_get('name_user_preferred', FALSE);
+  if ($field_name && $instance = field_info_instance('user', $field_name, 'user')) {
+    $format = name_get_format_by_machine_name($instance['settings']['override_format']);
+    if (empty($format)) {
+      $format = name_get_format_by_machine_name('default');
+    }
+    foreach ($accounts as $uid => $acccount) {
+      if (isset($names[$uid])) {
+        $accounts[$uid]->realname = $names[$uid];
       }
-      foreach ($accounts as $uid => $acccount) {
+      else {
         if ($items = field_get_items('user', $acccount, $instance['field_name'])) {
           // We still have raw user input here.
           $accounts[$uid]->realname = name_format($items[0], $format, array('object' => $acccount, 'type' => 'user'));
+          $names[$uid] = $accounts[$uid]->realname;
         }
       }
     }
@@ -571,7 +576,6 @@ function name_field_info() {
         'inline_css' => array_combine($keys, array_fill(0, $count, '')),
         'title_display' => array_combine($keys, array_fill(0, $count, 'description')),
         // New settings to override the user name. Only applies to user entities.
-        'override_username' => FALSE,
         'override_format' => 'default',
       ),
     ),
@@ -854,6 +858,39 @@ function name_field_instance_settings_pre_render($form) {
 function name_field_settings_pre_render($form) {
   module_load_include('inc', 'name', 'name.admin');
   return _name_field_settings_pre_render($form);
+}
+
+/**
+ * Implements hook_field_create_instance().
+ */
+function name_field_create_instance($instance) {
+  if($instance['entity_type'] == 'user' && !empty($instance['settings']['name_user_preferred'])) {
+    variable_set('name_user_preferred', $instance['settings']['name_user_preferred']);
+  }
+}
+
+/**
+ * Implements hook_field_update_instance().
+ */
+function name_field_update_instance($instance, $prior_instance) {
+  // I'm only targeting user entities here.
+  if ($instance['entity_type'] == 'user') {
+    if (!empty($instance['settings']['name_user_preferred'])) {
+      variable_set('name_user_preferred', $instance['settings']['name_user_preferred']);
+    }
+    elseif (!empty($prior_instance['settings']['name_user_preferred'])) {
+      variable_set('name_user_preferred', '');
+    }
+  }
+}
+
+/**
+ * Implements hook_field_delete_instance().
+ */
+function name_field_delete_instance($instance) {
+  if($instance['entity_type'] == 'user' && !empty($instance['settings']['name_user_preferred'])) {
+    variable_set('name_user_preferred', '');
+  }
 }
 
 /* -------------------------- namedb integration ---------------------------- */
