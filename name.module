@@ -865,7 +865,7 @@ function name_field_settings_pre_render($form) {
  */
 function name_field_create_instance($instance) {
   if($instance['entity_type'] == 'user' && !empty($instance['settings']['name_user_preferred'])) {
-    variable_set('name_user_preferred', $instance['settings']['name_user_preferred']);
+    variable_set('name_user_preferred', $instance['field_name']);
   }
 }
 
@@ -876,7 +876,7 @@ function name_field_update_instance($instance, $prior_instance) {
   // I'm only targeting user entities here.
   if ($instance['entity_type'] == 'user') {
     if (!empty($instance['settings']['name_user_preferred'])) {
-      variable_set('name_user_preferred', $instance['settings']['name_user_preferred']);
+      variable_set('name_user_preferred', $instance['field_name']);
     }
     elseif (!empty($prior_instance['settings']['name_user_preferred'])) {
       variable_set('name_user_preferred', '');
