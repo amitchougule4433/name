@@ -13,6 +13,7 @@
  * is just the data + a terminator byte, all fields get all columns with vc(255).
  */
 function name_field_schema($field) {
+  module_load_include('module', 'name');
   $columns = array();
   foreach (_name_translations() as $key => $title) {
     $columns[$key] = array(

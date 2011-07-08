@@ -172,7 +172,7 @@ function name_autocomplete($field_name, $target, $string = '') {
         }
       }
 
-      if ($limit > 0 && count($action['source']['data'])) {
+      if ($limit > 0 && isset($action['source']['data']) && count($action['source']['data'])) {
       }
     }
   }

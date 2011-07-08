@@ -315,6 +315,20 @@ function _name_field_instance_settings_form($field, $instance = NULL) {
     );
   }
 
+  $form['component_css'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Component separator CSS'),
+    '#default_value' => empty($settings['component_css']) ? '' : $settings['component_css'],
+    '#description' => t('Use this to override the default CSS used when rendering each component. Use "&lt;none&gt;" to prevent the use of inline CSS.'),
+  );
+
+  $form['credentials_inline'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show the credentials inline'),
+    '#default_value' => empty($settings['credentials_inline']) ? 0 : 1,
+    '#description' => t('The default position is to show the credentials on a line by themselves. This option overrides this to render the component inline.'),
+  );
+
   // Add the overwrite user name option.
   if ($instance['entity_type'] == 'user' && $instance['bundle'] == 'user') {
     $preferred_field = variable_get('name_user_preferred', '');
@@ -360,6 +374,8 @@ function _name_field_widget_form(&$form, &$form_state, $field, $instance, $langc
     '#minimum_components' => array_filter($fs['minimum_components']),
     '#default_value' => isset($items[$delta]) ? $items[$delta] : NULL,
     '#field' => $field,
+    '#credentials_inline' => empty($ws['credentials_inline']) ? 0 : 1,
+    '#component_css' => empty($ws['component_css']) ? '' : $ws['component_css'],
   );
 
   $components = array_filter($fs['components']);
