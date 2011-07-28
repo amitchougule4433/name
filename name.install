@@ -162,7 +162,7 @@ function name_install_default_formats() {
   $t = get_t();
   $formats = array(
     array(
-      'format' => '((((t+ig)+im)+if)+is)+ic',
+      'format' => '((((t+ig)+im)+if)+is)+jc',
       'name' => $t('Full'),
       'machine_name' => 'full',
     ),

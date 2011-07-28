@@ -39,7 +39,7 @@ function name_format($name_components, $format, $settings = array()) {
 function name_settings($key = NULL) {
   $settings = variable_get('name_settings', array());
   $settings += array(
-    'default_format' => '((((t+ig)+im)+if)+is)+kc',
+    'default_format' => '((((t+ig)+im)+if)+is)+jc',
     'sep1' => ' ',
     'sep2' => ', ',
     'sep3' => '',
@@ -488,6 +488,9 @@ function name_element_validate($element, &$form_state) {
       array('%name' => $label, '%components' => implode(', ', $missing_labels))));
   }
 
+  if ($empty && $element['#required']) {
+    form_error($element, t('%name is required.', array('%name' => t($element['#title']))));
+  }
   return $element;
 }
 
@@ -533,7 +536,7 @@ function name_field_info() {
       'label' => t('Name'),
       'description' => t('This field stores a users title, given, middle, family name, generational suffix and credentials in the database.'),
       'default_widget' => 'name_widget',
-      'default_formatter' => 'name_default_default',
+      'default_formatter' => 'name_default',
       'settings' => array(
         // Components used. At least given or family name is required.
         'components' => $keys,
@@ -618,26 +621,32 @@ function name_field_settings_form_validate($form, &$form_state) {
 
 /**
  * Implements hook_field_validate().
+ *
+ * @TODO
+ * Look at reintroducing this at some stage. Currently, this is problematic as
+ * Drupal appears to loss track of what fields are shown on the form and this
+ * results in validation errors.
  */
-function name_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  // Hack to test the default settings form.
-  if (empty($entity) && empty($entity_type)) {
-    return;
-  }
-  if ($instance['required']) {
-    if (is_array($items)) {
-      foreach ($items as $delta => $item) {
-        if (!name_field_is_empty($item, $field)) {
-          return;
-        }
-      }
-    }
-    $errors[$field['field_name']][$langcode][0][] = array(
-      'error' => 'required_components',
-      'message' => t('%name is required.', array('%name' => t($instance['label']))),
-    );
-  }
-}
+//function name_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+//  // Hack to test the default settings form.
+//  if (empty($entity) && empty($entity_type)) {
+//    return;
+//  }
+//
+//  if ($instance['required']) {
+//    if (is_array($items)) {
+//      foreach ($items as $delta => $item) {
+//        if (!name_field_is_empty($item, $field)) {
+//          return;
+//        }
+//      }
+//    }
+//    $errors[$field['field_name']][$langcode][0][] = array(
+//      'error' => 'required_components',
+//      'message' => t('%name is required.', array('%name' => t($instance['label']))),
+//    );
+//  }
+//}
 
 /**
  * Implements hook_field_load().
@@ -697,19 +706,22 @@ function name_field_widget_info() {
  *
  * Validation on required is done here. The max. length is done via Drupal.
  * Min. components is done via name_element validation callback.
+ *
+ * @todo
+ * Re-add this with name_field_validate().
  */
-function name_field_widget_error($element, $error, $form, &$form_state) {
-  $error_element = NULL;
-  switch ($error['error']) {
-    case 'required_components':
-      $error_element = $element[$element['#columns'][1]];
-      break;
-
-  }
-  if ($error_element) {
-    form_error($error_element, $error['message']);
-  }
-}
+//function name_field_widget_error($element, $error, $form, &$form_state) {
+//  $error_element = NULL;
+//  switch ($error['error']) {
+//    case 'required_components':
+//      $error_element = $element[$element['#columns'][1]];
+//      break;
+//
+//  }
+//  if ($error_element) {
+//    form_error($error_element, $error['message']);
+//  }
+//}
 
 /**
  * Implements hook_field_widget_form().
